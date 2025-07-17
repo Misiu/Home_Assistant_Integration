@@ -1,5 +1,7 @@
 """Sensor implementation for OpenEPaperLink integration."""
 from __future__ import annotations
+from .hub import Hub
+from .const import DOMAIN
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -29,9 +31,6 @@ import logging
 from .tag_types import get_hw_string, get_hw_dimensions
 
 _LOGGER: Final = logging.getLogger(__name__)
-
-from .const import DOMAIN
-from .hub import Hub
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -157,7 +156,8 @@ AP_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        value_fn=lambda data: datetime.fromtimestamp(data.get("sys_time", 0), tz=timezone.utc),
+        value_fn=lambda data: datetime.fromtimestamp(
+            data.get("sys_time", 0), tz=timezone.utc),
         icon="mdi:clock-outline",
     ),
     OpenEPaperLinkSensorEntityDescription(
@@ -240,28 +240,32 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda data: _calculate_battery_percentage(data.get("battery_mv", 0)),
+        value_fn=lambda data: _calculate_battery_percentage(
+            data.get("battery_mv", 0)),
         icon="mdi:battery",
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="last_seen",
         name="Last Seen",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data: datetime.fromtimestamp(data.get("last_seen", 0), tz=timezone.utc),
+        value_fn=lambda data: datetime.fromtimestamp(
+            data.get("last_seen", 0), tz=timezone.utc),
         icon="mdi:history",
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="next_update",
         name="Next Update",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data: datetime.fromtimestamp(data.get("next_update", 0), tz=timezone.utc),
+        value_fn=lambda data: datetime.fromtimestamp(
+            data.get("next_update", 0), tz=timezone.utc),
         icon="mdi:update",
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="next_checkin",
         name="Next Checkin",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data: datetime.fromtimestamp(data.get("next_checkin", 0), tz=timezone.utc),
+        value_fn=lambda data: datetime.fromtimestamp(
+            data.get("next_checkin", 0), tz=timezone.utc),
         icon="mdi:clock-check",
     ),
     OpenEPaperLinkSensorEntityDescription(
@@ -455,6 +459,7 @@ class OpenEPaperLinkTagSensor(OpenEPaperLinkBaseSensor):
     Each tag has multiple sensor entities created from the TAG_SENSOR_TYPES
     definitions, with values extracted from the tag's data in the hub.
     """
+
     def __init__(self, hub, tag_mac: str, description: OpenEPaperLinkSensorEntityDescription) -> None:
         """Initialize the tag sensor.
 
@@ -481,7 +486,8 @@ class OpenEPaperLinkTagSensor(OpenEPaperLinkBaseSensor):
         # Set entity_id with the sensor type included
         self.entity_id = f"{DOMAIN}.{tag_mac.lower()}_{description.key}"
 
-        firmware_version = str(self._hub.get_tag_data(tag_mac).get("version", ""))
+        firmware_version = str(
+            self._hub.get_tag_data(tag_mac).get("version", ""))
 
         tag_data = self._hub.get_tag_data(self._tag_mac)
         hw_type = tag_data.get("hw_type", 0)
@@ -699,7 +705,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     hub = hass.data[DOMAIN][entry.entry_id]
 
     # Set up AP sensors
-    ap_sensors = [OpenEPaperLinkAPSensor(hub, description) for description in AP_SENSOR_TYPES]
+    ap_sensors = [OpenEPaperLinkAPSensor(
+        hub, description) for description in AP_SENSOR_TYPES]
     async_add_entities(ap_sensors)
 
     @callback
@@ -715,7 +722,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         """
         entities = []
 
+        tag_data = hub.get_tag_data(tag_mac)
+        has_battery = tag_data.get("battery_mv", None) is not None
+
         for description in TAG_SENSOR_TYPES:
+            # Skip battery-related sensors if the tag has no battery
+            if not has_battery and description.key in ["battery_voltage", "battery_percentage"]:
+                _LOGGER.info(
+                    "Skipping battery-related sensor '%s' for tag %s as it has no battery.", description.key, tag_mac)
+                continue
+
             sensor = OpenEPaperLinkTagSensor(hub, tag_mac, description)
             entities.append(sensor)
 
