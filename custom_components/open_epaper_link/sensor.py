@@ -233,6 +233,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("battery_mv"),
         icon="mdi:battery",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="battery_percentage",
@@ -243,6 +244,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         value_fn=lambda data: _calculate_battery_percentage(
             data.get("battery_mv", 0)),
         icon="mdi:battery",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="last_seen",
@@ -275,6 +277,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("lqi"),
         icon="mdi:signal-cellular-outline",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="rssi",
@@ -318,6 +321,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
             "capabilities": get_capabilities(data.get("capabilities", 0))
         },
         icon="mdi:list-box-outline",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="update_count",
@@ -326,6 +330,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("update_count"),
         icon="mdi:counter",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="width",
@@ -334,6 +339,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("width"),
         icon="mdi:arrow-expand-horizontal",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="height",
@@ -342,6 +348,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("height"),
         icon="mdi:arrow-expand-vertical",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="runtime",
@@ -360,6 +367,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("boot_count", 0),
         icon="mdi:restart",
+        entity_registry_enabled_default=False,
     ),
     OpenEPaperLinkSensorEntityDescription(
         key="checkin_count",
@@ -368,14 +376,7 @@ TAG_SENSOR_TYPES: tuple[OpenEPaperLinkSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("checkin_count", 0),
         icon="mdi:clock-check",
-    ),
-    OpenEPaperLinkSensorEntityDescription(
-        key="block_requests",
-        name="Block Requests",
-        state_class=SensorStateClass.TOTAL,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda data: data.get("block_requests", 0),
-        icon="mdi:transfer",
+        entity_registry_enabled_default=False,
     ),
 
 )
